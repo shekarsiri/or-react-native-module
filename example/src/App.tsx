@@ -11,23 +11,43 @@ import {
 import Openreplay from '@openreplay/react-native';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  // const [result, setResult] = React.useState<number | undefined>();
+  const [number, onChangeNumber] = React.useState('');
 
-  React.useEffect(() => {
-    Openreplay.multiply(3, 7).then((results: number) => {
-      setResult(results);
-      console.log('OpenReplay started >>');
-      Openreplay.setMetadata('key', 'value');
-      Openreplay.setUserID('user-id');
-    });
-    // Openreplay.start().then((value: string) => {
-    //   console.log('OpenReplay started >>' + value);
-    //   Openreplay.setMetadata('key', 'value');
-    //   Openreplay.setUserID('user-id');
-    // });
-    // Openreplay.setMetadata('key', 'value');
-    // Openreplay.setUserID('user-id');
-  }, []);
+  const start = () => {
+    Openreplay.tracker
+      .startSession(
+        process.env.REACT_APP_KEY!,
+        {},
+        process.env.REACT_APP_INGEST
+      )
+      .then((resp: string) => {
+        console.log(resp);
+        Openreplay.tracker.setMetadata('key', 'value');
+        Openreplay.tracker.setUserID('user-id');
+      });
+    // Openreplay.tracker.startSession(
+    //   process.env.REACT_APP_KEY!,
+    //   {},
+    //   process.env.REACT_APP_INGEST
+    // );
+    // console.log('test', Openreplay.tracker, 123123);
+    Openreplay.patchNetwork(global, () => false, {});
+  };
+
+  React.useEffect(start, []);
+
+  const setMetadata = () => {
+    Openreplay.tracker.setMetadata('test', 'data');
+  };
+
+  const event = () => {
+    Openreplay.tracker.event('test', JSON.stringify({ value: 'keyv' }));
+  };
+
+  const setID = () => {
+    Openreplay.tracker.setUserID('react-native@connector.me');
+  };
 
   const apiTest = () => {
     fetch('https://pokeapi.co/api/v2/pokemon/ditto')
@@ -41,24 +61,30 @@ export default function App() {
 
   return (
     <Openreplay.ORTouchTrackingView style={styles.container}>
-      <View style={styles.content}>
-        <Text>Result: {result}</Text>
+      <View style={styles.container}>
+        <TouchableOpacity onPress={setMetadata}>
+          <Text>Set Metadata</Text>
+        </TouchableOpacity>
 
-        <Openreplay.CustomView>
-          <Text>Testing..</Text>
-        </Openreplay.CustomView>
+        <TouchableOpacity onPress={event}>
+          <Text>event</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={setID}>
+          <Text>Set user id</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={apiTest}>
           <Text>Request</Text>
         </TouchableOpacity>
 
-        {/*<Openreplay.ORTrackedInput*/}
-        {/*  style={styles.input}*/}
-        {/*  onChangeText={onChangeNumber}*/}
-        {/*  value={number}*/}
-        {/*  placeholder="Enter a number"*/}
-        {/*  numberOfLines={1}*/}
-        {/*/>*/}
+        <Openreplay.ORTrackedInput
+          style={styles.input}
+          onChangeText={onChangeNumber}
+          value={number}
+          placeholder="Enter a number"
+          numberOfLines={1}
+        />
 
         <Openreplay.ORSanitizedView style={styles.sanitizedView}>
           <Text>This is a sanitized view</Text>
@@ -73,27 +99,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ccc',
+    // backgroundColor: '#ccc',
   },
   content: {
     width: '90%', // adjusts the width to use 90% of the container width
     padding: 20,
-  },
-  customView: {
-    marginVertical: 10,
   },
   button: {
     backgroundColor: '#ddd',
     padding: 10,
     marginTop: 10,
   },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#999',
-    padding: 10,
-    marginVertical: 10,
-  },
+  input: { height: 30, width: 100, borderWidth: 1 },
   sanitizedView: {
     padding: 10,
     marginTop: 10,

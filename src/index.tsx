@@ -1,35 +1,37 @@
 import {
   NativeModules,
+  Platform,
   requireNativeComponent,
   type TextInputProps,
   UIManager,
   type ViewProps,
 } from 'react-native';
+import network from './network';
+import type { Options as NetworkOptions } from './network';
 
 const { ORTrackerConnector } = NativeModules;
 
-// const LINKING_ERROR =
-//   `The package '@openreplay/react-native' doesn't seem to be linked. Make sure: \n\n` +
-//   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-//   '- You rebuilt the app after installing the package\n' +
-//   '- You are not using Expo Go\n';
+const LINKING_ERROR =
+  `The package '@openreplay/react-native' doesn't seem to be linked. Make sure: \n\n` +
+  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
+  '- You rebuilt the app after installing the package\n' +
+  '- You are not using Expo Go\n';
 
-// interface Options {
-//   crashes?: boolean;
-//   analytics?: boolean;
-//   performances?: boolean;
-//   logs?: boolean;
-//   screen?: boolean;
-//   debugLogs?: boolean;
-// }
+interface Options {
+  crashes?: boolean;
+  analytics?: boolean;
+  performances?: boolean;
+  logs?: boolean;
+  screen?: boolean;
+  debugLogs?: boolean;
+}
 
 interface IORTrackerConnector {
   startSession: (
     projectKey: string,
-    // optionsDict: Options,
+    optionsDict: Options,
     projectUrl?: string
   ) => Promise<string>;
-  multiply: (a: number, b: number) => Promise<number>;
   setMetadata: (key: string, value: string) => void;
   event: (name: string, payload?: string) => void;
   setUserID: (userID: string) => void;
@@ -50,40 +52,36 @@ const RnTrackerTouchTrackingView =
   UIManager.getViewManagerConfig('RnTrackerTouchView') != null
     ? requireNativeComponent<ViewProps>('RnTrackerTouchView')
     : () => {
-        throw new Error('RnTrackerTouchView; >>>>> not found');
+        throw new Error('RnTrackerTouchView; ' + LINKING_ERROR);
       };
 
 const ORTrackedInput =
   UIManager.getViewManagerConfig('RnTrackedInput') != null
     ? requireNativeComponent<TextInputProps>('RnTrackedInput')
     : () => {
-        throw new Error('RnTrackedInput; >>>>> not found');
+        throw new Error('RnTrackedInput; ' + LINKING_ERROR);
       };
 
 const ORSanitizedView =
   UIManager.getViewManagerConfig('RnSanitizedView') != null
     ? requireNativeComponent<ViewProps>('RnSanitizedView')
     : () => {
-        throw new Error('RnSanitizedView; >>>>> not found');
+        throw new Error('RnSanitizedView; ' + LINKING_ERROR);
       };
 
 export function start(): Promise<string> {
   return ReactNative.startSession(
     '34LtpOwyUI2ELFUNVkMn',
-    // {
-    //   analytics: true,
-    //   crashes: true,
-    //   debugLogs: true,
-    //   logs: true,
-    //   performances: true,
-    //   screen: true,
-    // },
-    'https://foss.openreplau.com/ingest'
+    {
+      analytics: true,
+      crashes: true,
+      debugLogs: true,
+      logs: true,
+      performances: true,
+      screen: true,
+    },
+    'https://foss.openreplay.com/ingest'
   );
-}
-
-export function multiply(a: number, b: number): Promise<number> {
-  return ReactNative.multiply(a, b);
 }
 
 export function setMetadata(key: string, value: string) {
@@ -94,14 +92,22 @@ export function setUserID(userID: string) {
   ReactNative.setUserID(userID);
 }
 
+let patched = false;
+const patchNetwork = (
+  ctx = global,
+  isServiceUrl = () => false,
+  opts: Partial<NetworkOptions>
+) => {
+  if (!patched) {
+    network(ctx, ORTrackerConnector.networkRequest, isServiceUrl, opts);
+    patched = true;
+  }
+};
+
 export default {
   tracker: ORTrackerConnector as IORTrackerConnector,
-  start,
-  multiply,
-  setMetadata,
-  setUserID,
+  patchNetwork: patchNetwork,
   ORTouchTrackingView: RnTrackerTouchTrackingView,
   ORTrackedInput: ORTrackedInput,
   ORSanitizedView: ORSanitizedView,
-  CustomView: requireNativeComponent('RnCustomView'),
 };

@@ -20,13 +20,17 @@ class RnTrackerTouchManager : ViewGroupManager<FrameLayout>() {
 
   override fun createViewInstance(reactContext: ThemedReactContext): FrameLayout {
     return FrameLayout(reactContext).apply {
+      layoutParams = FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.MATCH_PARENT,
+        FrameLayout.LayoutParams.MATCH_PARENT
+      )
       isClickable = true
       val touchStart = PointF()
       setOnTouchListener { view, event ->
         when (event.action) {
           MotionEvent.ACTION_DOWN -> {
             touchStart.set(event.x, event.y)
-            true
+            false
           }
 
           MotionEvent.ACTION_UP -> {
@@ -44,6 +48,7 @@ class RnTrackerTouchManager : ViewGroupManager<FrameLayout>() {
             } else {
               Analytics.sendClick(event)
               view.performClick()  // Perform click for accessibility
+              false
             }
             true
           }
@@ -70,48 +75,3 @@ class RnTrackerTouchManager : ViewGroupManager<FrameLayout>() {
     parent.removeAllViews()
   }
 }
-
-//class RnTrackerTouchView(context: Context) : View(context) {
-//  private var touchStart: PointF? = null
-//
-//  @SuppressLint("ClickableViewAccessibility")
-//  override fun onTouchEvent(event: MotionEvent): Boolean {
-//    when (event.action) {
-//      MotionEvent.ACTION_DOWN -> {
-//        touchStart = PointF(event.x, event.y)
-//        return true
-//      }
-//
-//      MotionEvent.ACTION_UP -> {
-//        touchStart?.let { startPoint ->
-//          val endPoint = PointF(event.x, event.y)
-//          val deltaX = endPoint.x - startPoint.x
-//          val deltaY = endPoint.y - startPoint.y
-//          val distance = sqrt(deltaX * deltaX + deltaY * deltaY)
-//
-//          if (distance > 10) {
-//            val direction = if (abs(deltaX) > abs(deltaY)) {
-//              if (deltaX > 0) "right" else "left"
-//            } else {
-//              if (deltaY > 0) "down" else "up"
-//            }
-////                        Analytics.sendSwipe(
-////                            x = endPoint.x,
-////                            y = endPoint.y,
-////                            direction = direction
-////                        )
-//          } else {
-//            Analytics.sendClick(
-//              label = "React-Native View",
-//              ev = event
-//            )
-//          }
-//        }
-//        return true
-//      }
-//    }
-//    return super.onTouchEvent(event)
-//  }
-//}
-//
-//data class PointF(var x: Float, var y: Float)

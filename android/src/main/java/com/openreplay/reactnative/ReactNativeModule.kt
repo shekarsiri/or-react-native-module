@@ -19,12 +19,6 @@ class ReactNativeModule(reactContext: ReactApplicationContext) :
   // See https://reactnative.dev/docs/native-modules-android
   @ReactMethod
   fun multiply(a: Double, b: Double, promise: Promise) {
-    startSession(
-      "34LtpOwyUI2ELFUNVkMn",
-//      null,
-      "https://foss.openreplay.com/ingest",
-      promise
-    )
     promise.resolve(a * b * 2)
   }
 
@@ -42,32 +36,34 @@ class ReactNativeModule(reactContext: ReactApplicationContext) :
     val wifiOnly: Boolean = true  // assuming you want this as well
   )
 
+  //    optionsMap: ReadableMap?,
   @ReactMethod
   fun startSession(
     projectKey: String,
-//    optionsMap: ReadableMap?,
+    optionsMap: ReadableMap,
     projectUrl: String?,
     promise: Promise
   ) {
     val serverURL = projectUrl ?: "https://foss.openreplay.com/ingest"
-//    val options = OROptions(
-//      crashes = optionsMap.getBoolean("crashes"),
-//      analytics = optionsMap.getBoolean("analytics"),
-////      performances = optionsMap.getBoolean("performances") ?: true,
-////      logs = optionsMap.getBoolean("logs") ?: true,
-//      screen = optionsMap.getBoolean("screen"),
-////      debugLogs = optionsMap.getBoolean("debugLogs") ?: false
-////      wifiOnly = optionsMap.getBoolean("wifiOnly") ?: false,
-////      debugImages = optionsMap.getBoolean("debugImages") ?: false
-//    )
+    val options = OROptions(
+      crashes = optionsMap.getBoolean("crashes"),
+      analytics = optionsMap.getBoolean("analytics"),
+//      performances = optionsMap.getBoolean("performances") ?: true,
+//      logs = optionsMap.getBoolean("logs") ?: true,
+      screen = optionsMap.getBoolean("screen"),
+//      debugLogs = optionsMap.getBoolean("debugLogs") ?: false
+//      wifiOnly = optionsMap.getBoolean("wifiOnly") ?: false,
+//      debugImages = optionsMap.getBoolean("debugImages") ?: false
+    )
 
     val context = currentActivity as Activity
-
     OpenReplay.serverURL = serverURL
-    OpenReplay.start(context, projectKey, OROptions.defaults, onStarted = {
+
+    OpenReplay.start(context, projectKey, options, onStarted = {
       println("OpenReplay started")
       promise.resolve("OpenReplay Started")
     })
+//    promise.resolve("OpenReplay Started")
   }
 
   @ReactMethod
