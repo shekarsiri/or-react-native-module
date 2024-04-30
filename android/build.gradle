@@ -8,7 +8,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "com.android.tools.build:gradle:7.2.1"
+    classpath "com.android.tools.build:gradle:8.2.2"
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
   }
@@ -80,6 +80,7 @@ android {
 repositories {
   mavenCentral()
   google()
+  maven { url = uri("https://jitpack.io") }
 }
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
@@ -88,7 +89,19 @@ dependencies {
   // For < 0.71, this will be from the local maven repo
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
-  implementation "com.facebook.react:react-native:+"
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation("com.facebook.react:react-native:0.20.1")
+  implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
+  implementation("com.github.shekarsiri:android-tracker:v1.1.4")
+//  implementation file("libs/tracker-release.aar")
 }
+
+//allprojects {
+//  repositories {
+//    maven { url = uri("https://jitpack.io") }
+//    google()
+//    mavenCentral()
+//  }
+//}
+
+
 
